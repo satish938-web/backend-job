@@ -162,18 +162,52 @@ export const login = async (req, res) => {
         });
     }
 }
+export const resetPassword = async (req, res) => {
+    try {
+        const { email, newPassword } = req.body;
+        
+        if (!email || !newPassword) {
+            return res.status(400).json({
+                message: "Email and new password are required",
+                success: false
+            });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({
+                message: "User not found",
+                success: false
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await User.findByIdAndUpdate(user._id, { password: hashedPassword });
+
+        return res.status(200).json({
+            message: "Password reset successful",
+            success: true
+        });
+    } catch (error) {
+        console.error("💥 Password reset error:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        });
+    }
+}
+
 export const logout = async (req, res) => {
     try {
         // Cookie settings for production (cross-origin) and development
         const isProduction = process.env.NODE_ENV === 'production';
-        const frontendUrl = process.env.FRONTEND_URL || req.headers.origin;
-        const isCrossOrigin = frontendUrl && !frontendUrl.includes('localhost');
+        const isVercelOrigin = req.headers.origin && req.headers.origin.includes('.vercel.app');
         
         const cookieOptions = {
             maxAge: 0,
             httpOnly: true,
-            sameSite: (isProduction || isCrossOrigin) ? 'none' : 'lax',
-            secure: (isProduction || isCrossOrigin),
+            sameSite: (isProduction || isVercelOrigin) ? 'none' : 'lax',
+            secure: (isProduction || isVercelOrigin),
             path: '/'
         };
 

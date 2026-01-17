@@ -1,5 +1,5 @@
 import express from "express";
-import { login, logout, register, updateProfile } from "../controllers/user.controller.js";
+import { login, logout, register, updateProfile, resetPassword } from "../controllers/user.controller.js";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
 import { singleUpload } from "../middlewares/mutler.js";
  
@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.post("/register",singleUpload,register);
 router.post("/login",login);
+router.post("/reset-password",resetPassword);
 router.get("/logout",logout);
 router.get("/check-auth", isAuthenticated, (req, res) => {
     // Test endpoint to verify authentication is working
