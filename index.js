@@ -25,6 +25,7 @@ const corsOptions = {
             'https://finaljob-89d2.onrender.com',
             'https://jobportal-2-8nej.onrender.com',
             'https://jobportalfinal.vercel.app',
+            'https://frontend-9wy1.vercel.app',
             process.env.FRONTEND_URL
         ].filter(Boolean);
         
