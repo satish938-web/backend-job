@@ -64,58 +64,40 @@ export const register = async (req, res) => {
 }
 export const login = async (req, res) => {
     try {
-        console.log("🔐 Login attempt started");
         const { email, password, role } = req.body;
-        console.log("📧 Login data:", { email, role, passwordProvided: !!password });
         
         if (!email || !password || !role) {
-            console.log("❌ Missing fields:", { email: !!email, password: !!password, role: !!role });
             return res.status(400).json({
                 message: "Something is missing",
                 success: false
             });
         };
-        
-        console.log("🔍 Finding user with email:", email);
         let user = await User.findOne({ email });
-        console.log("👤 User found:", !!user);
-        
         if (!user) {
-            console.log("❌ User not found");
             return res.status(400).json({
                 message: "Incorrect email or password.",
                 success: false,
             })
         }
-        
-        console.log("🔑 Comparing password");
         const isPasswordMatch = await bcrypt.compare(password, user.password);
-        console.log("🔐 Password match:", isPasswordMatch);
-        
         if (!isPasswordMatch) {
-            console.log("❌ Password incorrect");
             return res.status(400).json({
                 message: "Incorrect email or password.",
                 success: false,
             })
         };
-        
         // check role is correct or not
-        console.log("👔 Checking role:", { userRole: user.role, requestedRole: role });
         if (role !== user.role) {
-            console.log("❌ Role mismatch");
             return res.status(400).json({
                 message: "Account doesn't exist with current role.",
                 success: false
             })
         };
 
-        console.log("🎫 Creating token");
         const tokenData = {
             userId: user._id
         }
         const token = await jwt.sign(tokenData, process.env.SECRET_KEY, { expiresIn: '1d' });
-        console.log("✅ Token created successfully");
 
         user = {
             _id: user._id,
@@ -126,88 +108,51 @@ export const login = async (req, res) => {
             profile: user.profile
         }
 
-        // Cookie settings for production (cross-origin)
+        // Cookie settings for production (cross-origin) and development
+        // Check if we're in production or if frontend is on different domain
         const isProduction = process.env.NODE_ENV === 'production';
-        const isVercelOrigin = req.headers.origin && req.headers.origin.includes('.vercel.app');
+        const frontendUrl = process.env.FRONTEND_URL || req.headers.origin;
+        const isCrossOrigin = frontendUrl && !frontendUrl.includes('localhost');
         
         const cookieOptions = {
             maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
             httpOnly: true,
-            sameSite: (isProduction || isVercelOrigin) ? 'none' : 'lax',
-            secure: (isProduction || isVercelOrigin), // Send over HTTPS for cross-origin
+            sameSite: (isProduction || isCrossOrigin) ? 'none' : 'lax',
+            secure: (isProduction || isCrossOrigin), // Send over HTTPS for cross-origin
             path: '/' // Make cookie available for all paths
         };
 
         console.log("🍪 Setting cookie with options:", {
             sameSite: cookieOptions.sameSite,
             secure: cookieOptions.secure,
-            httpOnly: cookieOptions.httpOnly,
-            origin: req.headers.origin,
-            isProduction,
-            isVercelOrigin
+            httpOnly: cookieOptions.httpOnly
         });
 
-        console.log("🎉 Login successful for:", user.fullname);
         return res.status(200).cookie("token", token, cookieOptions).json({
             message: `Welcome back ${user.fullname}`,
             user,
             success: true
         })
     } catch (error) {
-        console.error("💥 Login error:", error);
-        console.error("💥 Error stack:", error.stack);
+        console.log(error);
         return res.status(500).json({
             message: "Internal server error",
             success: false
         });
     }
 }
-export const resetPassword = async (req, res) => {
-    try {
-        const { email, newPassword } = req.body;
-        
-        if (!email || !newPassword) {
-            return res.status(400).json({
-                message: "Email and new password are required",
-                success: false
-            });
-        }
-
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({
-                message: "User not found",
-                success: false
-            });
-        }
-
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        await User.findByIdAndUpdate(user._id, { password: hashedPassword });
-
-        return res.status(200).json({
-            message: "Password reset successful",
-            success: true
-        });
-    } catch (error) {
-        console.error("💥 Password reset error:", error);
-        return res.status(500).json({
-            message: "Internal server error",
-            success: false
-        });
-    }
-}
-
 export const logout = async (req, res) => {
     try {
         // Cookie settings for production (cross-origin) and development
         const isProduction = process.env.NODE_ENV === 'production';
-        const isVercelOrigin = req.headers.origin && req.headers.origin.includes('.vercel.app');
+        const frontendUrl = process.env.FRONTEND_URL || req.headers.origin;
+        const isCrossOrigin = frontendUrl && !frontendUrl.includes('localhost');
         
         const cookieOptions = {
             maxAge: 0,
             httpOnly: true,
-            sameSite: (isProduction || isVercelOrigin) ? 'none' : 'lax',
-            secure: (isProduction || isVercelOrigin),
+            sameSite: (isProduction || isCrossOrigin) ? 'none' : 'lax',
+            secure: (isProduction || isCrossOrigin),
             path: '/'
         };
 

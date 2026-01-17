@@ -52,6 +52,23 @@ export const getCompany = async (req, res) => {
         });
     }
 }
+
+// get all approved companies for users to browse
+export const getAllApprovedCompanies = async (req, res) => {
+    try {
+        const companies = await Company.find({ status: "approved" }).sort({ createdAt: -1 });
+        return res.status(200).json({
+            companies: companies || [],
+            success: true
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        });
+    }
+}
 // get company by id
 export const getCompanyById = async (req, res) => {
     try {
@@ -147,6 +164,91 @@ export const updateCompanyStatus = async (req, res) => {
             message: `Company ${status} successfully.`,
             success: true,
             company
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        });
+    }
+}
+
+// approve company
+export const approveCompany = async (req, res) => {
+    try {
+        const company = await Company.findByIdAndUpdate(
+            req.params.id,
+            { status: "approved" },
+            { new: true }
+        );
+
+        if (!company) {
+            return res.status(404).json({
+                message: "Company not found.",
+                success: false
+            });
+        }
+
+        return res.status(200).json({
+            message: "Company approved successfully.",
+            success: true,
+            company
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        });
+    }
+}
+
+// reject company
+export const rejectCompany = async (req, res) => {
+    try {
+        const company = await Company.findByIdAndUpdate(
+            req.params.id,
+            { status: "rejected" },
+            { new: true }
+        );
+
+        if (!company) {
+            return res.status(404).json({
+                message: "Company not found.",
+                success: false
+            });
+        }
+
+        return res.status(200).json({
+            message: "Company rejected successfully.",
+            success: true,
+            company
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        });
+    }
+}
+
+// delete company
+export const deleteCompany = async (req, res) => {
+    try {
+        const company = await Company.findByIdAndDelete(req.params.id);
+
+        if (!company) {
+            return res.status(404).json({
+                message: "Company not found.",
+                success: false
+            });
+        }
+
+        return res.status(200).json({
+            message: "Company deleted successfully.",
+            success: true
         });
     } catch (error) {
         console.log(error);
