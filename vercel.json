@@ -1,1 +1,31 @@
-{"version": 2, "builds": [{"src": "index.js", "use": "@vercel/node"}], "routes": [{"src": "/api/(.*)", "dest": "/index.js"}, {"src": "/(.*)", "dest": "/index.js"}]}
+{
+  "version": 2,
+  "name": "job-portal-backend",
+  "builds": [
+    {
+      "src": "index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.js"
+    }
+  ],
+  "env": {
+    "MONGO_URI": "mongodb+srv://satish1:L8j6rRGCcZhED8HZ@cluster0.uwpa6ac.mongodb.net/authentication",
+    "PORT": "3000",
+    "SECRET_KEY": "secret#text",
+    "NODE_ENV": "production",
+    "EMAIL_USER": "satish202627@gmail.com",
+    "EMAIL_PASSWORD": "gymrpwlurcnsinaz",
+    "CLOUD_NAME": "dniv7of7f",
+    "API_KEY": "821292217519531",
+    "API_SECRET": "3kRMHDJQm3eEkKQIzomHi-kAYO0"
+  }
+}

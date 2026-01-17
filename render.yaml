@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: job-portal-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: MONGO_URI
+        value: mongodb+srv://satish1:L8j6rRGCcZhED8HZ@cluster0.uwpa6ac.mongodb.net/authentication
+      - key: PORT
+        value: 3000
+      - key: SECRET_KEY
+        value: secret#text
+      - key: NODE_ENV
+        value: production
+      - key: EMAIL_USER
+        value: satish202627@gmail.com
+      - key: EMAIL_PASSWORD
+        value: gymrpwlurcnsinaz
+      - key: CLOUD_NAME
+        value: dniv7of7f
+      - key: API_KEY
+        value: 821292217519531
+      - key: API_SECRET
+        value: 3kRMHDJQm3eEkKQIzomHi-kAYO0
