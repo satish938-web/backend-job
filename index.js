@@ -13,6 +13,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());
+// More permissive CORS for development and Vercel deployments
 const corsOptions = {
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
@@ -27,19 +28,26 @@ const corsOptions = {
             'https://jobportalfinal.vercel.app',
             'https://frontend-9wy1.vercel.app',
             'https://frontend-8nhq.vercel.app',
+            'https://frontend-u5s7.vercel.app',
             process.env.FRONTEND_URL
         ].filter(Boolean);
         
-        // In production, also allow any Vercel or Render frontend URL
+        // In development, be more permissive
+        const isDevelopment = process.env.NODE_ENV !== 'production';
         const isProduction = process.env.NODE_ENV === 'production';
         const isRenderOrigin = origin && origin.includes('.onrender.com');
         const isVercelOrigin = origin && origin.includes('.vercel.app');
         
-        if (!origin || allowedOrigins.includes(origin) || (isProduction && (isRenderOrigin || isVercelOrigin))) {
+        // Allow all origins in development, and all Vercel/Render in production
+        if (!origin || 
+            allowedOrigins.includes(origin) || 
+            isDevelopment || 
+            (isProduction && (isRenderOrigin || isVercelOrigin))) {
             callback(null, true);
         } else {
             console.log('❌ CORS blocked origin:', origin);
             console.log('🔍 Allowed origins:', allowedOrigins);
+            console.log('🔧 Environment:', process.env.NODE_ENV);
             callback(new Error('Not allowed by CORS'));
         }
     },
@@ -48,6 +56,15 @@ const corsOptions = {
     allowedHeaders: ['Content-Type', 'Authorization'],
     exposedHeaders: ['Set-Cookie']
 }
+
+// Alternative: Allow all origins (use this if above doesn't work)
+// const corsOptions = {
+//     origin: '*',
+//     credentials: true,
+//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//     allowedHeaders: ['Content-Type', 'Authorization'],
+//     exposedHeaders: ['Set-Cookie']
+// }
 
 app.use(cors(corsOptions));
 
