@@ -108,24 +108,25 @@ export const login = async (req, res) => {
             profile: user.profile
         }
 
-        // Cookie settings for production (cross-origin) and development
-        // Check if we're in production or if frontend is on different domain
+        // Cookie settings for production (cross-origin)
         const isProduction = process.env.NODE_ENV === 'production';
-        const frontendUrl = process.env.FRONTEND_URL || req.headers.origin;
-        const isCrossOrigin = frontendUrl && !frontendUrl.includes('localhost');
+        const isVercelOrigin = req.headers.origin && req.headers.origin.includes('.vercel.app');
         
         const cookieOptions = {
             maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
             httpOnly: true,
-            sameSite: (isProduction || isCrossOrigin) ? 'none' : 'lax',
-            secure: (isProduction || isCrossOrigin), // Send over HTTPS for cross-origin
+            sameSite: (isProduction || isVercelOrigin) ? 'none' : 'lax',
+            secure: (isProduction || isVercelOrigin), // Send over HTTPS for cross-origin
             path: '/' // Make cookie available for all paths
         };
 
         console.log("🍪 Setting cookie with options:", {
             sameSite: cookieOptions.sameSite,
             secure: cookieOptions.secure,
-            httpOnly: cookieOptions.httpOnly
+            httpOnly: cookieOptions.httpOnly,
+            origin: req.headers.origin,
+            isProduction,
+            isVercelOrigin
         });
 
         return res.status(200).cookie("token", token, cookieOptions).json({
