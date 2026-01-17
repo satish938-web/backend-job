@@ -64,40 +64,58 @@ export const register = async (req, res) => {
 }
 export const login = async (req, res) => {
     try {
+        console.log("🔐 Login attempt started");
         const { email, password, role } = req.body;
+        console.log("📧 Login data:", { email, role, passwordProvided: !!password });
         
         if (!email || !password || !role) {
+            console.log("❌ Missing fields:", { email: !!email, password: !!password, role: !!role });
             return res.status(400).json({
                 message: "Something is missing",
                 success: false
             });
         };
+        
+        console.log("🔍 Finding user with email:", email);
         let user = await User.findOne({ email });
+        console.log("👤 User found:", !!user);
+        
         if (!user) {
+            console.log("❌ User not found");
             return res.status(400).json({
                 message: "Incorrect email or password.",
                 success: false,
             })
         }
+        
+        console.log("🔑 Comparing password");
         const isPasswordMatch = await bcrypt.compare(password, user.password);
+        console.log("🔐 Password match:", isPasswordMatch);
+        
         if (!isPasswordMatch) {
+            console.log("❌ Password incorrect");
             return res.status(400).json({
                 message: "Incorrect email or password.",
                 success: false,
             })
         };
+        
         // check role is correct or not
+        console.log("👔 Checking role:", { userRole: user.role, requestedRole: role });
         if (role !== user.role) {
+            console.log("❌ Role mismatch");
             return res.status(400).json({
                 message: "Account doesn't exist with current role.",
                 success: false
             })
         };
 
+        console.log("🎫 Creating token");
         const tokenData = {
             userId: user._id
         }
         const token = await jwt.sign(tokenData, process.env.SECRET_KEY, { expiresIn: '1d' });
+        console.log("✅ Token created successfully");
 
         user = {
             _id: user._id,
@@ -129,13 +147,15 @@ export const login = async (req, res) => {
             isVercelOrigin
         });
 
+        console.log("🎉 Login successful for:", user.fullname);
         return res.status(200).cookie("token", token, cookieOptions).json({
             message: `Welcome back ${user.fullname}`,
             user,
             success: true
         })
     } catch (error) {
-        console.log(error);
+        console.error("💥 Login error:", error);
+        console.error("💥 Error stack:", error.stack);
         return res.status(500).json({
             message: "Internal server error",
             success: false
