@@ -59,7 +59,17 @@ app.use("/api/v1/company", companyRoute);
 app.use("/api/v1/job", jobRoute);
 app.use("/api/v1/application", applicationRoute);
 
-app.listen(PORT,()=>{
-    connectDB();
-    console.log(`Server running at port ${PORT}`);
-})
+// Connect to database first, then start server
+const startServer = async () => {
+    try {
+        await connectDB();
+        app.listen(PORT, () => {
+            console.log(`Server running at port ${PORT}`);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
+};
+
+startServer();
